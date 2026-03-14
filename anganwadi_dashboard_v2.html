@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnganAI — Supply Chain Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f0d; --surface:#111a15; --surface2:#182320; --border:#1e3028;
+    --green:#22c55e; --green-dim:#16a34a; --green-glow:rgba(34,197,94,.15);
+    --amber:#f59e0b; --red:#ef4444; --blue:#3b82f6; --cyan:#06b6d4;
+    --text:#e2f0e8; --text-dim:#6b8f78; --text-muted:#3d5a47;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(34,197,94,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+  body::after{content:'';position:fixed;top:-10%;left:50%;transform:translateX(-50%);width:900px;height:450px;background:radial-gradient(ellipse,rgba(34,197,94,.055) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+  /* HEADER */
+  header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:rgba(10,15,13,.9);backdrop-filter:blur(14px);}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:34px;height:34px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 18px rgba(34,197,94,.4);}
+  .logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-.02em;}
+  .logo-text span{color:var(--green);}
+  .hdr-meta{display:flex;align-items:center;gap:18px;font-family:'Space Mono',monospace;font-size:.68rem;color:var(--text-dim);}
+  .live-badge{display:flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);padding:5px 11px;border-radius:100px;color:var(--green);font-size:.68rem;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+
+  /* LAYOUT */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 61px);}
+
+  /* SIDEBAR */
+  aside{border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:3px;background:rgba(10,15,13,.4);}
+  .nav-sec{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--text-muted);letter-spacing:.15em;text-transform:uppercase;padding:14px 10px 6px;}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;cursor:pointer;font-size:.82rem;color:var(--text-dim);transition:all .15s;border:1px solid transparent;font-weight:500;}
+  .nav-item:hover{background:var(--surface);color:var(--text);}
+  .nav-item.active{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.2);color:var(--green);}
+  .nav-icon{font-size:.95rem;width:18px;text-align:center;}
+  .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;padding:2px 6px;border-radius:100px;font-family:'Space Mono',monospace;}
+  .agent-section{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+  .agent-pill{display:flex;align-items:center;gap:7px;padding:7px 10px;margin-bottom:3px;border-radius:5px;background:var(--surface);font-size:.72rem;color:var(--text-dim);}
+  .a-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite;}
+  .a-dot.amber{background:var(--amber);} .a-dot.blue{background:var(--blue);}
+
+  /* MAIN */
+  main{padding:24px 28px;overflow-y:auto;max-height:calc(100vh - 61px);}
+  main::-webkit-scrollbar{width:4px;}
+  main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+  /* PAGE HEADER */
+  .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;}
+  .ph-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:2px;}
+  .ph-sub{color:var(--text-dim);font-size:.82rem;}
+  .btn-row{display:flex;gap:9px;align-items:center;}
+  .btn-primary{background:var(--green);color:#0a0f0d;border:none;padding:8px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .15s;}
+  .btn-primary:hover{background:#16a34a;transform:scale(.98);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-sec{background:transparent;color:var(--text-dim);border:1px solid var(--border);padding:7px 13px;border-radius:8px;font-size:.78rem;cursor:pointer;transition:all .15s;}
+  .btn-sec:hover{border-color:var(--text-dim);color:var(--text);}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:18px;position:relative;overflow:hidden;transition:border-color .2s;animation:fadeIn .4s ease both;}
+  .stat:hover{border-color:rgba(34,197,94,.3);}
+  .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);opacity:0;transition:opacity .2s;}
+  .stat:hover::before{opacity:1;}
+  .stat-lbl{font-size:.68rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-family:'Space Mono',monospace;margin-bottom:8px;}
+  .stat-val{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:5px;}
+  .stat-delta{font-size:.72rem;display:flex;align-items:center;gap:4px;}
+  .up{color:var(--green);} .warn{color:var(--amber);} .dn{color:var(--red);}
+  .stat-ico{position:absolute;top:14px;right:14px;font-size:1.4rem;opacity:.2;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  /* AGENTS ROW */
+  .agent-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+  .agcard{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;transition:all .2s;animation:fadeIn .4s ease both;}
+  .agcard:hover{border-color:rgba(34,197,94,.4);transform:translateY(-2px);}
+  .agcard.running{border-color:var(--green);box-shadow:0 0 20px rgba(34,197,94,.18);animation:agPulse 1.5s ease-in-out infinite;}
+  @keyframes agPulse{0%,100%{box-shadow:0 0 10px rgba(34,197,94,.15);}50%{box-shadow:0 0 28px rgba(34,197,94,.35);}}
+  .ag-icon{font-size:1.3rem;margin-bottom:8px;}
+  .ag-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;margin-bottom:3px;}
+  .ag-status{font-size:.7rem;color:var(--text-dim);margin-bottom:8px;min-height:32px;}
+  .ag-bar-bg{height:3px;background:var(--border);border-radius:100px;overflow:hidden;}
+  .ag-bar{height:100%;background:var(--green);border-radius:100px;transition:width .6s ease;}
+  .ag-bar.amber{background:var(--amber);} .ag-bar.blue{background:var(--blue);}
+  .ag-meta{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--text-muted);margin-top:6px;}
+
+  /* PANELS */
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;animation:fadeIn .5s ease both;}
+  .panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:7px;}
+  .tag{font-family:'Space Mono',monospace;font-size:.6rem;padding:3px 7px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+  .tag.amber{background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.2);}
+  .tag.blue{background:rgba(59,130,246,.1);color:var(--blue);border-color:rgba(59,130,246,.2);}
+  .tag.red{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.2);}
+  .panel-meta{font-family:'Space Mono',monospace;font-size:.63rem;color:var(--text-muted);}
+  .panel-body{padding:18px;}
+
+  /* GRID LAYOUTS */
+  .grid-2{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:18px;}
+  .grid-equal{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px;}
+
+  /* MAP */
+  .map-wrap{position:relative;height:320px;background:#0d1a12;overflow:hidden;}
+  .map-svg{width:100%;height:100%;}
+  .map-tooltip{position:absolute;background:#1a2e22;border:1px solid var(--green);padding:8px 12px;border-radius:8px;font-size:.73rem;pointer-events:none;z-index:100;white-space:nowrap;display:none;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+
+  /* ALERTS */
+  .alert-item{display:flex;align-items:flex-start;gap:11px;padding:11px;border-radius:8px;margin-bottom:7px;border:1px solid transparent;}
+  .alert-item.critical{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);}
+  .alert-item.warning{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);}
+  .alert-item.info{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);}
+  .alert-title{font-size:.8rem;font-weight:600;margin-bottom:2px;}
+  .alert-body{font-size:.72rem;color:var(--text-dim);line-height:1.4;}
+  .alert-time{margin-left:auto;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--text-muted);flex-shrink:0;}
+
+  /* CHART */
+  .chart-area{height:150px;display:flex;align-items:flex-end;gap:6px;padding:0 2px;}
+  .bar-grp{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .bar-pair{width:100%;display:flex;gap:2px;align-items:flex-end;height:120px;}
+  .bar{flex:1;border-radius:3px 3px 0 0;transition:opacity .2s;cursor:pointer;position:relative;}
+  .bar:hover{opacity:.75;}
+  .bar.actual{background:var(--green-dim);}
+  .bar.pred{background:var(--green);opacity:.55;}
+  .bar-lbl{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--text-muted);text-align:center;}
+  .bar-lbl.future{color:var(--green);}
+  .chart-legend{display:flex;gap:14px;margin-top:10px;font-size:.7rem;color:var(--text-dim);}
+  .ldot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px;}
+
+  /* TABLE */
+  .tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+  .tbl th{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;padding:7px 11px;text-align:left;border-bottom:1px solid var(--border);font-weight:400;}
+  .tbl td{padding:9px 11px;border-bottom:1px solid rgba(30,48,40,.5);color:var(--text-dim);vertical-align:middle;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .tbl tr:hover td{color:var(--text);background:rgba(34,197,94,.025);}
+
+  /* STATUS BADGES */
+  .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:100px;font-size:.65rem;font-family:'Space Mono',monospace;}
+  .badge.ok{background:rgba(34,197,94,.1);color:var(--green);}
+  .badge.low{background:rgba(245,158,11,.1);color:var(--amber);}
+  .badge.critical{background:rgba(239,68,68,.1);color:var(--red);}
+  .badge.transit{background:rgba(59,130,246,.1);color:var(--blue);}
+  .badge.delivered{background:rgba(34,197,94,.1);color:var(--green);}
+  .badge.delayed{background:rgba(239,68,68,.1);color:var(--red);}
+  .badge.scheduled{background:rgba(100,116,139,.1);color:#94a3b8;}
+
+  /* FIELD */
+  .field-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(30,48,40,.5);}
+  .field-item:last-child{border-bottom:none;}
+  .favatar{width:30px;height:30px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:.75rem;border:1px solid var(--border);flex-shrink:0;}
+  .fname{font-size:.8rem;font-weight:500;}
+  .floc{font-size:.7rem;color:var(--text-dim);}
+  .ftime{margin-left:auto;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--text-muted);}
+
+  /* GRIEVANCES */
+  .griev-item{padding:11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:7px;}
+  .griev-text{color:var(--text-dim);font-size:.77rem;margin-bottom:6px;line-height:1.4;}
+  .griev-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .gtag{font-size:.63rem;padding:2px 7px;border-radius:100px;font-family:'Space Mono',monospace;}
+  .gtag.delay{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+  .gtag.stockout{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
+  .gtag.quality{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.2);}
+  .gtag.positive{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+  .gtag.mismatch{background:rgba(168,85,247,.1);color:#a855f7;border:1px solid rgba(168,85,247,.2);}
+  .gtag.communication{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+  .gtag.other{background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.2);}
+
+  /* SENTIMENT BAR */
+  .sent-row{display:flex;align-items:center;gap:9px;margin-bottom:5px;}
+  .sent-lbl{width:72px;font-size:.7rem;color:var(--text-dim);}
+  .sent-bg{flex:1;height:6px;background:var(--border);border-radius:100px;overflow:hidden;}
+  .sent-fill{height:100%;border-radius:100px;transition:width .6s ease;}
+  .sent-pct{width:34px;text-align:right;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--text-dim);}
+
+  /* ROUTE FORM */
+  .form-group{margin-bottom:12px;}
+  .form-label{font-size:.72rem;color:var(--text-dim);margin-bottom:5px;display:block;font-family:'Space Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;}
+  .form-input,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:.8rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+  .form-input:focus,.form-select:focus{border-color:var(--green);}
+  .form-select option{background:var(--surface2);}
+
+  /* LOADING */
+  .loading{display:flex;align-items:center;gap:8px;color:var(--text-dim);font-size:.78rem;padding:20px;}
+  .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .empty{padding:24px;text-align:center;color:var(--text-muted);font-size:.78rem;}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;background:#111a15;border:1px solid var(--green);padding:14px 18px;border-radius:11px;font-size:.8rem;color:var(--text);z-index:1000;display:none;box-shadow:0 0 28px rgba(34,197,94,.18);max-width:320px;animation:fadeIn .3s ease;}
+  .toast-title{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:3px;color:var(--green);}
+  .toast-msg{color:var(--text-dim);font-size:.75rem;line-height:1.5;}
+
+  /* SECTION DIVIDER */
+  .sec-div{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .sec-div-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;white-space:nowrap;}
+  .sec-div-line{flex:1;height:1px;background:var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌿</div>
+    <div class="logo-text">Angan<span>AI</span></div>
+    <span style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--text-muted);margin-left:4px;">v2.0 BACKEND</span>
+  </div>
+  <div class="hdr-meta">
+    <span id="clock">--:--:--</span>
+    <span>|</span>
+    <span>Uttarakhand · Chamoli District</span>
+    <span id="api-status" style="color:var(--text-muted)">⟳ connecting…</span>
+    <div class="live-badge"><div class="live-dot"></div>MULTI-AGENT LIVE</div>
+  </div>
+</header>
+
+<div class="app">
+<aside>
+  <div class="nav-sec">Navigation</div>
+  <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+  <div class="nav-item" onclick="showPage('agents')"><span class="nav-icon">🤖</span> Agents</div>
+  <div class="nav-item" onclick="showPage('routes')"><span class="nav-icon">🗺️</span> Route Map</div>
+  <div class="nav-item" onclick="showPage('inventory')"><span class="nav-icon">📦</span> Inventory</div>
+  <div class="nav-item" onclick="showPage('alerts')"><span class="nav-icon">⚡</span> Alerts <span class="nav-badge" id="alert-badge">…</span></div>
+  <div class="nav-item" onclick="showPage('grievances')"><span class="nav-icon">💬</span> Grievances</div>
+  <div class="nav-item" onclick="showPage('field')"><span class="nav-icon">📱</span> Field App</div>
+
+  <div class="agent-section">
+    <div class="nav-sec">Agent Status</div>
+    <div class="agent-pill"><div class="a-dot" id="dot-demand"></div> Demand Forecast</div>
+    <div class="agent-pill"><div class="a-dot blue" id="dot-route"></div> Route Optimizer</div>
+    <div class="agent-pill"><div class="a-dot amber" id="dot-supply"></div> Supply Monitor</div>
+    <div class="agent-pill"><div class="a-dot" id="dot-field"></div> Field Data</div>
+  </div>
+</aside>
+
+<main id="main-content">
+  <div class="loading" id="page-loader"><div class="spinner"></div> Loading data from backend…</div>
+</main>
+</div>
+
+<div id="toast"><div class="toast-title" id="toast-title">Agent Update</div><div class="toast-msg" id="toast-msg"></div></div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────
+const API = "http://localhost:5050/api";
+let currentPage = "dashboard";
+let dashData = null;
+let allAlerts = [];
+
+// ─── CLOCK ───────────────────────────────────────────────────────
+setInterval(() => {
+  document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-IN");
+}, 1000);
+
+// ─── API HELPERS ─────────────────────────────────────────────────
+async function apiFetch(path) {
+  const r = await fetch(API + path);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function apiPost(path, body={}) {
+  const r = await fetch(API + path, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+function showToast(title, msg, dur=4000) {
+  document.getElementById("toast-title").textContent = title;
+  document.getElementById("toast-msg").textContent   = msg;
+  const t = document.getElementById("toast");
+  t.style.display = "block";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.display="none", dur);
+}
+
+// ─── API STATUS CHECK ─────────────────────────────────────────────
+async function checkApi() {
+  try {
+    const h = await apiFetch("/health");
+    document.getElementById("api-status").textContent = "✓ API connected";
+    document.getElementById("api-status").style.color = "var(--green)";
+    return true;
+  } catch(e) {
+    document.getElementById("api-status").textContent = "✗ API offline – showing demo mode";
+    document.getElementById("api-status").style.color = "var(--amber)";
+    return false;
+  }
+}
+
+// ─── PAGE ROUTER ──────────────────────────────────────────────────
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+  event?.currentTarget?.classList.add("active");
+  renderPage(page);
+}
+
+async function renderPage(page) {
+  const mc = document.getElementById("main-content");
+  mc.innerHTML = `<div class="loading"><div class="spinner"></div> Loading ${page}…</div>`;
+  try {
+    if (page === "dashboard")   await renderDashboard();
+    else if (page === "agents") await renderAgents();
+    else if (page === "routes") await renderRoutes();
+    else if (page === "inventory") await renderInventory();
+    else if (page === "alerts") await renderAlerts();
+    else if (page === "grievances") await renderGrievances();
+    else if (page === "field")  await renderField();
+  } catch(e) {
+    mc.innerHTML = `<div class="empty">⚠ Error loading data: ${e.message}<br><small>Make sure the Flask server is running on port 5050</small></div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DASHBOARD PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderDashboard() {
+  const [dash, alerts, chart] = await Promise.all([
+    apiFetch("/dashboard"),
+    apiFetch("/supply/alerts"),
+    apiFetch("/demand/chart"),
+  ]);
+  allAlerts = alerts;
+  const kpis = dash.kpis;
+  document.getElementById("alert-badge").textContent = kpis.active_alerts || 0;
+
+  const inv = dash.inventory_map || [];
+  const critical = inv.filter(v=>v.status==="critical").length;
+  const lowN     = inv.filter(v=>v.status==="low").length;
+
+  const mc = document.getElementById("main-content");
+  mc.innerHTML = `
+  <div class="ph">
+    <div>
+      <div class="ph-title">Supply Chain Intelligence</div>
+      <div class="ph-sub">Real-time multi-agent monitoring · ${kpis.total_centres} Anganwadi centres · Live backend</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="renderDashboard()">↻ Refresh</button>
+      <button class="btn-primary" id="cycle-btn" onclick="runCycle()">▶ Run Agent Cycle</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s">
+      <div class="stat-lbl">Total Centres</div>
+      <div class="stat-val" style="color:var(--green)">${kpis.total_centres}</div>
+      <div class="stat-delta up">↑ ${inv.length} villages covered</div>
+      <div class="stat-ico">🏫</div>
+    </div>
+    <div class="stat" style="animation-delay:.1s">
+      <div class="stat-lbl">Stock Coverage</div>
+      <div class="stat-val" style="color:${kpis.coverage_pct > 70?'var(--green)':'var(--amber)'}">${kpis.coverage_pct}%</div>
+      <div class="stat-delta ${kpis.low_stock_centres>5?'warn':'up'}">${critical > 0 ? '❗' : '⚠'} ${kpis.low_stock_centres} centres low</div>
+      <div class="stat-ico">📦</div>
+    </div>
+    <div class="stat" style="animation-delay:.15s">
+      <div class="stat-lbl">Active Alerts</div>
+      <div class="stat-val" style="color:${kpis.active_alerts>0?'var(--red)':'var(--green)'}">${kpis.active_alerts}</div>
+      <div class="stat-delta ${kpis.active_alerts>0?'dn':'up'}">${critical} critical · ${lowN} warnings</div>
+      <div class="stat-ico">⚡</div>
+    </div>
+    <div class="stat" style="animation-delay:.2s">
+      <div class="stat-lbl">Forecast Accuracy</div>
+      <div class="stat-val" style="color:var(--green)">${dash.forecast_accuracy}%</div>
+      <div class="stat-delta up">↑ GBM Model · 7-item forecast</div>
+      <div class="stat-ico">🎯</div>
+    </div>
+  </div>
+
+  <!-- AGENT CARDS -->
+  <div class="sec-div"><div class="sec-div-title">Active Agents</div><div class="sec-div-line"></div><span id="last-cycle" style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--text-muted);">ready</span></div>
+  <div class="agent-row">
+    <div class="agcard" style="animation-delay:.25s" id="ag-demand">
+      <div class="ag-icon">🔮</div>
+      <div class="ag-name">Demand Forecast</div>
+      <div class="ag-status" id="ag-demand-status">GBM model trained · ${kpis.total_centres} centres · 7 ration items</div>
+      <div class="ag-bar-bg"><div class="ag-bar" id="ag-demand-bar" style="width:88%"></div></div>
+      <div class="ag-meta" id="ag-demand-meta">Accuracy: ${dash.forecast_accuracy}% · Ready</div>
+    </div>
+    <div class="agcard" style="animation-delay:.3s" id="ag-route">
+      <div class="ag-icon">🗺️</div>
+      <div class="ag-name">Route Optimizer</div>
+      <div class="ag-status" id="ag-route-status">Greedy VRP · mountain terrain factor 1.35×</div>
+      <div class="ag-bar-bg"><div class="ag-bar blue" id="ag-route-bar" style="width:70%"></div></div>
+      <div class="ag-meta" id="ag-route-meta">Avg speed: 30 km/h mountain</div>
+    </div>
+    <div class="agcard" style="animation-delay:.35s" id="ag-supply">
+      <div class="ag-icon">📡</div>
+      <div class="ag-name">Supply Monitor</div>
+      <div class="ag-status" id="ag-supply-status">${kpis.active_alerts} alerts active · ${kpis.coverage_pct}% coverage</div>
+      <div class="ag-bar-bg"><div class="ag-bar amber" id="ag-supply-bar" style="width:${kpis.coverage_pct}%"></div></div>
+      <div class="ag-meta" id="ag-supply-meta">${kpis.low_stock_centres} centres below threshold</div>
+    </div>
+    <div class="agcard" style="animation-delay:.4s" id="ag-field">
+      <div class="ag-icon">📱</div>
+      <div class="ag-name">Field Data</div>
+      <div class="ag-status" id="ag-field-status">Sync active · offline-capable via PWA</div>
+      <div class="ag-bar-bg"><div class="ag-bar" id="ag-field-bar" style="width:100%"></div></div>
+      <div class="ag-meta" id="ag-field-meta">Real-time DB sync</div>
+    </div>
+  </div>
+
+  <!-- MAP + ALERTS -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">🗺️ Village Stock Map <span class="tag blue">SUPPLY AGENT</span></div>
+        <div class="panel-meta">${inv.length} villages · live inventory</div>
+      </div>
+      <div class="map-wrap" id="map-wrap">
+        ${renderMap(inv)}
+        <div class="map-tooltip" id="map-tip"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">⚡ Live Alerts <span class="tag red">MONITOR AGENT</span></div>
+        <span class="panel-meta">${alerts.length} total</span>
+      </div>
+      <div class="panel-body" style="padding:10px;max-height:320px;overflow-y:auto;">
+        ${renderAlertItems(alerts.slice(0,6))}
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART + ROUTES -->
+  <div class="grid-equal">
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">📈 Demand Forecast <span class="tag">FORECAST AGENT</span></div>
+        <span class="panel-meta">Actual + AI predicted · all items</span>
+      </div>
+      <div class="panel-body">
+        ${renderDemandChart(chart)}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">📋 Village Risk Summary <span class="tag amber">SUPPLY AGENT</span></div>
+        <span class="panel-meta">Stock coverage days</span>
+      </div>
+      <div class="panel-body" style="padding:0 0 12px;">
+        ${await renderRiskTable()}
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MAP RENDERER (SVG from API data)
+// ══════════════════════════════════════════════════════════════════
+function renderMap(villages) {
+  // Project lat/lon → SVG coordinates
+  const lats = villages.map(v=>v.lat);
+  const lons = villages.map(v=>v.lon);
+  if (!lats.length) return "<div class='empty'>No map data</div>";
+
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats);
+  const minLon=Math.min(...lons), maxLon=Math.max(...lons);
+  const W=580, H=300, PAD=30;
+
+  function proj(lat,lon) {
+    const x = PAD + (lon - minLon) / (maxLon - minLon + .001) * (W - PAD*2);
+    const y = PAD + (maxLat - lat) / (maxLat - minLat + .001) * (H - PAD*2);
+    return [x,y];
+  }
+
+  const colorMap = {critical:"#ef4444", low:"#f59e0b", ok:"#22c55e"};
+  const nodes = villages.map(v => {
+    const [x,y] = proj(v.lat, v.lon);
+    const c = colorMap[v.status] || "#6b8f78";
+    const pct = Math.round(v.stock_pct || 0);
+    return `<g class="village-node" onclick="showVillageTip('${v.village}','${v.status}',${pct},${x},${y})" style="cursor:pointer">
+      <circle cx="${x}" cy="${y}" r="10" fill="${c}" opacity=".18"/>
+      <circle cx="${x}" cy="${y}" r="6" fill="${c}" stroke="#0a0f0d" stroke-width="1.5"/>
+      <text x="${x}" y="${y+18}" text-anchor="middle" font-size="8" fill="${c}" font-family="DM Sans">${v.village}</text>
+    </g>`;
+  }).join("");
+
+  const legend = `<g transform="translate(12,12)">
+    <rect width="120" height="68" rx="6" fill="#0d1a12" stroke="#1e3028" stroke-width="1"/>
+    <circle cx="14" cy="16" r="5" fill="#22c55e"/>
+    <text x="24" y="20" font-size="8" fill="#6b8f78" font-family="DM Sans">Adequate stock</text>
+    <circle cx="14" cy="32" r="5" fill="#f59e0b"/>
+    <text x="24" y="36" font-size="8" fill="#6b8f78" font-family="DM Sans">Low stock</text>
+    <circle cx="14" cy="48" r="5" fill="#ef4444"/>
+    <text x="24" y="52" font-size="8" fill="#6b8f78" font-family="DM Sans">Critical</text>
+  </g>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%">
+    <path d="M0,${H*0.6} Q${W*.2},${H*.4} ${W*.5},${H*.5} Q${W*.8},${H*.6} ${W},${H*.45} L${W},${H} L0,${H}Z" fill="#0f2018" opacity=".5"/>
+    ${nodes}${legend}
+  </svg>`;
+}
+
+function showVillageTip(name, status, pct, x, y) {
+  const tip = document.getElementById("map-tip");
+  if (!tip) return;
+  const labels = {ok:"✅ Adequate Stock", low:"⚠️ Low — Replenishment Needed", critical:"🚨 Critical Shortage"};
+  tip.innerHTML = `<strong>${name}</strong><br>${labels[status] || status}<br>Stock: ${pct}% of monthly need`;
+  tip.style.display = "block";
+  // approximate pixel from SVG
+  const wrap = document.getElementById("map-wrap");
+  const W = wrap?.offsetWidth || 580, H = wrap?.offsetHeight || 300;
+  tip.style.left = Math.min(x / 580 * W + 10, W - 180) + "px";
+  tip.style.top  = Math.max(y / 300 * H - 50, 5) + "px";
+  clearTimeout(tip._t);
+  tip._t = setTimeout(() => tip.style.display="none", 2800);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ALERT ITEMS
+// ══════════════════════════════════════════════════════════════════
+function renderAlertItems(alerts) {
+  if (!alerts.length) return `<div class="empty">No active alerts</div>`;
+  return alerts.map(a => {
+    const sev  = a.severity === "critical" ? "critical" : a.severity === "warning" ? "warning" : "info";
+    const icon = a.severity === "critical" ? "🚨" : a.severity === "warning" ? "⚠️" : "ℹ️";
+    const time = a.created_at ? a.created_at.slice(11,16) : "--:--";
+    return `<div class="alert-item ${sev}">
+      <div style="font-size:1rem;flex-shrink:0;">${icon}</div>
+      <div>
+        <div class="alert-title" style="color:var(--${sev==='critical'?'red':sev==='warning'?'amber':'blue'})">${a.village_name || "Village"} — ${a.type}</div>
+        <div class="alert-body">${a.message}</div>
+      </div>
+      <div class="alert-time">${time}</div>
+    </div>`;
+  }).join("");
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DEMAND CHART
+// ══════════════════════════════════════════════════════════════════
+function renderDemandChart(chart) {
+  const actual    = chart.actual    || [];
+  const predicted = chart.predicted || [];
+  const allVals   = [...actual.map(d=>d.total_kg), ...predicted.map(d=>d.total_kg)];
+  const maxVal    = Math.max(...allVals, 1);
+
+  const actBars = actual.map((d,i) => {
+    const h = Math.round(d.total_kg / maxVal * 100);
+    const lbl = d.week ? d.week.replace(/\d{4}-/,"") : `W-${actual.length-i}`;
+    return `<div class="bar-grp">
+      <div class="bar-pair"><div class="bar actual" style="height:${h}%" title="${Math.round(d.total_kg)} kg"></div></div>
+      <div class="bar-lbl">${lbl}</div>
+    </div>`;
+  }).join("");
+
+  const predBars = predicted.map((d,i) => {
+    const h = Math.round(d.total_kg / maxVal * 100);
+    return `<div class="bar-grp">
+      <div class="bar-pair"><div class="bar pred" style="height:${h}%" title="Predicted: ${Math.round(d.total_kg)} kg"></div></div>
+      <div class="bar-lbl future">${d.week || "W+"+(i+1)}</div>
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="chart-area">${actBars}${predBars}</div>
+    <div class="chart-legend">
+      <div><span class="ldot" style="background:var(--green-dim)"></span>Actual (weekly total kg)</div>
+      <div><span class="ldot" style="background:var(--green);opacity:.55"></span>AI Predicted</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RISK TABLE
+// ══════════════════════════════════════════════════════════════════
+async function renderRiskTable() {
+  const data = await apiFetch("/demand/summary");
+  return `<table class="tbl">
+    <thead><tr><th>Village</th><th>Predicted (wk)</th><th>Stock</th><th>Days</th><th>Risk</th></tr></thead>
+    <tbody>
+    ${data.map(r => `<tr>
+      <td style="color:var(--text)">${r.village_name}</td>
+      <td>${Math.round(r.predicted_kg)} kg</td>
+      <td>${Math.round(r.total_stock || 0)} kg</td>
+      <td>${r.days_coverage}</td>
+      <td><span class="badge ${r.risk}">${r.risk.toUpperCase()}</span></td>
+    </tr>`).join("")}
+    </tbody>
+  </table>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AGENTS PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderAgents() {
+  const [dash, nlp] = await Promise.all([
+    apiFetch("/dashboard"),
+    apiFetch("/field/nlp-summary"),
+  ]);
+  const kpis = dash.kpis;
+
+  document.getElementById("main-content").innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Agent Control Center</div><div class="ph-sub">Multi-agent architecture · 4 AI agents · SQLite backend</div></div>
+    <div class="btn-row">
+      <button class="btn-primary" id="cycle-btn" onclick="runCycle()">▶ Run Full Agent Cycle</button>
+    </div>
+  </div>
+
+  <div class="grid-equal" style="margin-bottom:18px">
+    ${agentCard("🔮","DemandForecastAgent","Gradient Boosting Regressor",
+      `Trained on 6-month daily consumption data across all centres.<br>Features: lag-7, lag-14, rolling mean, seasonal, beneficiary count.<br>Accuracy: <strong style="color:var(--green)">${dash.forecast_accuracy}%</strong>`,
+      "green", 88)}
+    ${agentCard("🗺️","RouteOptimizerAgent","Greedy Nearest-Neighbour VRP",
+      `Vehicle Routing Problem solver with capacity constraints.<br>Mountain terrain factor: 1.35×. Avg speed: 30 km/h.<br>Minimises fuel cost and delivery time simultaneously.`,
+      "blue", 75)}
+    ${agentCard("📡","SupplyMonitorAgent","Rule-Based + Threshold Engine",
+      `Monitors stock-vs-demand ratio for each centre.<br>Critical: &lt;7 days coverage. Warning: &lt;14 days.<br>Coverage: <strong style="color:var(--amber)">${kpis.coverage_pct}%</strong> · Active alerts: <strong style="color:var(--red)">${kpis.active_alerts}</strong>`,
+      "amber", kpis.coverage_pct)}
+    ${agentCard("📱","FieldDataAgent","NLP Classifier + Sync Engine",
+      `Rule-based keyword NLP across ${nlp.total} grievances.<br>Categories: delay, stockout, quality, mismatch, positive.<br>Resolved: <strong style="color:var(--green)">${nlp.resolved_pct}%</strong> · Critical: <strong style="color:var(--red)">${nlp.critical_count}</strong>`,
+      "green", 100)}
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <div class="panel-hdr"><div class="panel-title">🔗 Agent Communication Flow</div></div>
+    <div class="panel-body">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:4px;text-align:center;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:1.2rem;margin-bottom:4px">🔮</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;">Demand</div>
+          <div style="font-size:.65rem;color:var(--text-dim);">Forecast Agent</div>
+        </div>
+        <div style="font-size:.7rem;color:var(--green);padding:0 4px;">→<br><span style="font-size:.6rem;color:var(--text-muted);">predictions</span></div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:1.2rem;margin-bottom:4px">🗺️</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;">Route</div>
+          <div style="font-size:.65rem;color:var(--text-dim);">Optimizer Agent</div>
+        </div>
+        <div style="font-size:.7rem;color:var(--green);padding:0 4px;">→<br><span style="font-size:.6rem;color:var(--text-muted);">routes</span></div>
+        <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:12px;">
+          <div style="font-size:1.2rem;margin-bottom:4px">📡</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;">Supply</div>
+          <div style="font-size:.65rem;color:var(--text-dim);">Monitor Agent</div>
+        </div>
+        <div style="font-size:.7rem;color:var(--green);padding:0 4px;">↔<br><span style="font-size:.6rem;color:var(--text-muted);">sync</span></div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:1.2rem;margin-bottom:4px">📱</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;">Field Data</div>
+          <div style="font-size:.65rem;color:var(--text-dim);">Field Agent</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:8px;font-size:.75rem;color:var(--text-dim);line-height:1.6;">
+        <strong style="color:var(--text);">Data Flow:</strong>
+        Demand Agent predicts village-level demand → Supply Monitor raises alerts → Route Agent computes optimal delivery paths →
+        Field Agent syncs worker updates back to Supply Monitor → Supply Monitor feeds accuracy back to Demand Agent.
+        All agents share a <strong style="color:var(--green);">SQLite database</strong> as the single source of truth.
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="cycle-log-panel" style="display:none">
+    <div class="panel-hdr"><div class="panel-title">📋 Last Cycle Log</div></div>
+    <div class="panel-body" id="cycle-log"></div>
+  </div>
+  `;
+}
+
+function agentCard(icon, name, algo, desc, color, pct) {
+  return `<div class="panel" style="animation-delay:.1s">
+    <div class="panel-hdr">
+      <div class="panel-title">${icon} ${name}</div>
+      <span class="tag ${color}">${algo.split(" ").slice(0,2).join(" ")}</span>
+    </div>
+    <div class="panel-body">
+      <div style="font-size:.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:12px;">${desc}</div>
+      <div style="font-size:.68rem;color:var(--text-muted);font-family:'Space Mono',monospace;margin-bottom:6px;">Algorithm: ${algo}</div>
+      <div class="ag-bar-bg" style="height:4px"><div class="ag-bar ${color}" style="width:${pct}%"></div></div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ROUTES PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderRoutes() {
+  const routes = await apiFetch("/routes/optimize");
+  const mc = document.getElementById("main-content");
+  mc.innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Route Optimization</div><div class="ph-sub">AI-computed delivery routes · Greedy VRP · Mountain terrain adjusted</div></div>
+  </div>
+  ${routes.length === 0 ? `<div class="empty">No routes to display. Run agent cycle first.</div>` :
+    routes.map((r,i) => `
+    <div class="panel" style="margin-bottom:16px;animation-delay:${i*.1}s">
+      <div class="panel-hdr">
+        <div class="panel-title">🚛 ${r.vehicle_number} <span class="tag blue">ROUTE ${i+1}</span></div>
+        <div style="display:flex;gap:12px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--text-dim);">
+          <span>📦 ${r.load_kg}/${r.capacity_kg} kg</span>
+          <span>📍 ${r.total_km} km</span>
+          <span>⏱ ${r.eta_hours}h</span>
+          <span>⛽ ${r.fuel_saved_pct}% saved</span>
+          <span>🕐 Depart ${r.departure} → Arrive ${r.estimated_arrival}</span>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:14px 18px;">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+          ${r.stops.map((s,j) => `
+            <div style="display:flex;align-items:center;gap:4px;">
+              <div style="background:${s.action==='pickup'?'var(--green)':s.action==='return'?'var(--surface2)':'var(--blue)'};color:${s.action==='return'?'var(--text-dim)':'#0a0f0d'};padding:6px 10px;border-radius:6px;font-size:.75rem;font-weight:600;border:1px solid ${s.action==='return'?'var(--border)':'transparent'}">
+                ${s.action==='pickup'?'🏭':s.action==='return'?'🔄':'📦'} ${s.name}
+                ${s.deliver_kg ? `<br><span style="font-size:.62rem;opacity:.8">${s.deliver_kg} kg</span>` : ''}
+              </div>
+              ${j < r.stops.length-1 ? '<span style="color:var(--text-muted);font-size:.8rem;">→</span>' : ''}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("")}
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INVENTORY PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderInventory() {
+  const [inv, wh] = await Promise.all([
+    apiFetch("/supply/inventory"),
+    apiFetch("/supply/warehouse"),
+  ]);
+  const mc = document.getElementById("main-content");
+  mc.innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Inventory Monitor</div><div class="ph-sub">Village stock levels · Warehouse stocks · Supply Agent data</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:18px">
+    <div class="panel-hdr"><div class="panel-title">🏭 Warehouse Stock <span class="tag">SUPPLY AGENT</span></div></div>
+    <div class="panel-body" style="padding:0 0 12px">
+      <table class="tbl">
+        <thead><tr><th>Warehouse</th><th>Item</th><th>Stock (kg/ltr)</th><th>Last Updated</th></tr></thead>
+        <tbody>
+          ${wh.map(w=>`<tr>
+            <td style="color:var(--text)">${w.warehouse}</td>
+            <td>${w.item}</td>
+            <td>${w.stock_kg}</td>
+            <td style="font-family:'Space Mono',monospace;font-size:.65rem">${w.updated_at}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr"><div class="panel-title">📍 Village Stock Coverage <span class="tag amber">MONITOR AGENT</span></div></div>
+    <div class="panel-body" style="padding:0 0 12px">
+      <table class="tbl">
+        <thead><tr><th>Village</th><th>Total Stock</th><th>Monthly Need</th><th>Coverage %</th><th>Status</th></tr></thead>
+        <tbody>
+          ${inv.map(v=>`<tr>
+            <td style="color:var(--text)">${v.village}</td>
+            <td>${Math.round(v.total_stock)} kg</td>
+            <td>${Math.round(v.total_need)} kg</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1;height:5px;background:var(--border);border-radius:100px;width:80px;overflow:hidden">
+                  <div style="height:100%;width:${Math.min(v.stock_pct,100)}%;background:${v.status==='ok'?'var(--green)':v.status==='low'?'var(--amber)':'var(--red)'};border-radius:100px"></div>
+                </div>
+                <span style="font-family:'Space Mono',monospace;font-size:.65rem">${v.stock_pct}%</span>
+              </div>
+            </td>
+            <td><span class="badge ${v.status}">${v.status.toUpperCase()}</span></td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ALERTS PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderAlerts() {
+  const alerts = await apiFetch("/supply/alerts");
+  document.getElementById("main-content").innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Alert Centre</div><div class="ph-sub">${alerts.length} total alerts from Supply Monitor Agent</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><div class="panel-title">⚡ All Alerts <span class="tag red">MONITOR AGENT</span></div></div>
+    <div class="panel-body" style="padding:12px">
+      ${renderAlertItems(alerts)}
+      ${alerts.length === 0 ? `<div class="empty">✅ No active alerts. All centres adequately stocked.</div>` : ""}
+    </div>
+  </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GRIEVANCES PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderGrievances() {
+  const [griev, nlp] = await Promise.all([
+    apiFetch("/field/grievances"),
+    apiFetch("/field/nlp-summary"),
+  ]);
+  const total = nlp.total || 1;
+  const cats  = nlp.categories || {};
+
+  document.getElementById("main-content").innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Grievance Analysis</div><div class="ph-sub">NLP-classified field reports · ${nlp.total} total · ${nlp.resolved_pct}% resolved</div></div>
+  </div>
+  <div class="grid-equal">
+    <div class="panel">
+      <div class="panel-hdr"><div class="panel-title">📊 Category Breakdown <span class="tag amber">NLP ENGINE</span></div></div>
+      <div class="panel-body">
+        ${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,count]) => `
+          <div class="sent-row">
+            <span class="sent-lbl">${cat}</span>
+            <div class="sent-bg"><div class="sent-fill" style="width:${Math.round(count/total*100)}%;background:${cat==='delay'?'var(--red)':cat==='positive'?'var(--green)':cat==='stockout'?'var(--amber)':'var(--cyan)'}"></div></div>
+            <span class="sent-pct">${Math.round(count/total*100)}%</span>
+          </div>
+        `).join("")}
+        <div style="margin-top:14px;padding:10px;background:var(--surface2);border-radius:8px;font-size:.75rem;color:var(--text-dim);">
+          Resolved: <strong style="color:var(--green)">${nlp.resolved_pct}%</strong> ·
+          Critical: <strong style="color:var(--red)">${nlp.critical_count}</strong> ·
+          Total: ${nlp.total}
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr"><div class="panel-title">💬 Recent Reports <span class="tag">FIELD AGENT</span></div></div>
+      <div class="panel-body" style="padding:12px;max-height:360px;overflow-y:auto">
+        ${griev.slice(0,12).map(g=>`
+          <div class="griev-item">
+            <div class="griev-text">${g.text}</div>
+            <div class="griev-tags">
+              <span class="gtag ${g.category}">${g.category}</span>
+              <span class="gtag ${g.severity==='critical'?'delay':g.severity==='medium'?'stockout':'positive'}">${g.severity}</span>
+              ${g.resolved ? '<span class="gtag positive">✓ resolved</span>' : ''}
+              <span style="margin-left:auto;font-family:\'Space Mono\',monospace;font-size:.6rem;color:var(--text-muted)">${g.village || ""} · ${g.date}</span>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FIELD APP PAGE
+// ══════════════════════════════════════════════════════════════════
+async function renderField() {
+  const [updates, centres] = await Promise.all([
+    apiFetch("/field/updates"),
+    apiFetch("/centres"),
+  ]);
+  document.getElementById("main-content").innerHTML = `
+  <div class="ph">
+    <div><div class="ph-title">Field Data App</div><div class="ph-sub">Worker stock updates · Offline-capable · Synced to backend</div></div>
+  </div>
+  <div class="grid-equal">
+    <div class="panel">
+      <div class="panel-hdr"><div class="panel-title">📱 Recent Field Updates <span class="tag">FIELD AGENT</span></div></div>
+      <div class="panel-body" style="padding:10px">
+        ${updates.map(u => `
+          <div class="field-item">
+            <div class="favatar">👩</div>
+            <div>
+              <div class="fname">${u.worker_name}</div>
+              <div class="floc">📍 ${u.centre} · ${u.item}: ${u.stock_kg} kg (${u.pct}%)</div>
+            </div>
+            <span class="badge ${u.status}" style="margin-right:4px">${u.status.toUpperCase()}</span>
+            <div class="ftime">${u.updated_at ? u.updated_at.slice(11,16) : "--"}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr"><div class="panel-title">➕ Submit Field Update <span class="tag blue">LIVE API</span></div></div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Anganwadi Centre</label>
+          <select class="form-select" id="f-centre">
+            ${centres.slice(0,30).map(c=>`<option value="${c.id}">${c.name} (${c.village_name})</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ration Item</label>
+          <select class="form-select" id="f-item">
+            ${["Rice","Wheat","Dal","Oil","Salt","Jaggery","Eggs"].map(i=>`<option>${i}</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Stock (kg)</label>
+          <input type="number" class="form-input" id="f-stock" placeholder="e.g. 45" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Worker Name</label>
+          <input type="text" class="form-input" id="f-worker" placeholder="e.g. Meena Devi">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note / Grievance (optional)</label>
+          <input type="text" class="form-input" id="f-note" placeholder="e.g. Truck delayed, stock low">
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="submitField()">📤 Submit Update</button>
+        <div id="field-result" style="margin-top:10px;font-size:.75rem;"></div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+async function submitField() {
+  const centre_id   = parseInt(document.getElementById("f-centre").value);
+  const item        = document.getElementById("f-item").value;
+  const stock_kg    = parseFloat(document.getElementById("f-stock").value);
+  const worker_name = document.getElementById("f-worker").value || "Worker";
+  const note        = document.getElementById("f-note").value || "";
+  const res = document.getElementById("field-result");
+
+  if (isNaN(stock_kg)) { res.textContent = "⚠ Please enter a valid stock amount."; res.style.color="var(--amber)"; return; }
+  res.textContent = "Syncing…"; res.style.color = "var(--text-dim)";
+
+  try {
+    const r = await apiPost("/field/submit", {centre_id, item, stock_kg, worker_name, note});
+    res.textContent = `✅ Synced at ${r.updated_at?.slice(11,19) || "now"}`;
+    res.style.color = "var(--green)";
+    showToast("Field Agent", `Stock update synced: ${item} ${stock_kg}kg at centre #${centre_id}`);
+  } catch(e) {
+    res.textContent = "✗ Sync failed: " + e.message;
+    res.style.color = "var(--red)";
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RUN AGENT CYCLE
+// ══════════════════════════════════════════════════════════════════
+async function runCycle() {
+  const btn = document.getElementById("cycle-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "⟳ Running cycle…"; }
+
+  // Animate all agent cards as running
+  ["ag-demand","ag-route","ag-supply","ag-field"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("running");
+  });
+
+  try {
+    showToast("🤖 Agent Cycle", "All 4 agents starting…", 8000);
+    const result = await apiPost("/agents/run-cycle");
+    const log = result.log || [];
+
+    // Update agent statuses
+    const agMap = {DemandForecastAgent:"ag-demand", RouteOptimizerAgent:"ag-route",
+                   SupplyMonitorAgent:"ag-supply", FieldDataAgent:"ag-field"};
+    const barMap = {DemandForecastAgent:"ag-demand-bar", RouteOptimizerAgent:"ag-route-bar",
+                    SupplyMonitorAgent:"ag-supply-bar", FieldDataAgent:"ag-field-bar"};
+    log.filter(l=>l.status==="done").forEach(l => {
+      const st = document.getElementById(agMap[l.agent]+"-status");
+      const bar= document.getElementById(barMap[l.agent]);
+      if (st) st.innerHTML = l.msg;
+      if (bar) bar.style.width = "100%";
+    });
+
+    // Update cycle meta
+    const lc = document.getElementById("last-cycle");
+    if (lc) lc.textContent = `Last cycle: just now · ${result.elapsed_sec}s`;
+
+    // Show log if on agents page
+    const logPanel = document.getElementById("cycle-log-panel");
+    const logEl    = document.getElementById("cycle-log");
+    if (logPanel && logEl) {
+      logPanel.style.display = "block";
+      logEl.innerHTML = log.map(l => `
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(30,48,40,.4)">
+          <span style="font-size:.7rem;color:${l.status==='done'?'var(--green)':'var(--amber)'};font-family:'Space Mono',monospace;flex-shrink:0">${l.status==='done'?'✓':'⟳'} ${l.agent}</span>
+          <span style="font-size:.75rem;color:var(--text-dim)">${l.msg}</span>
+        </div>
+      `).join("") + `<div style="margin-top:10px;font-size:.72rem;color:var(--text-dim)">⏱ Total: ${result.elapsed_sec}s · Completed: ${result.timestamp?.slice(11,19)}</div>`;
+    }
+
+    showToast("✅ Cycle Complete", `${log.length} steps · ${result.elapsed_sec}s elapsed`);
+  } catch(e) {
+    showToast("⚠ Cycle Error", e.message, 5000);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "▶ Run Agent Cycle"; }
+    ["ag-demand","ag-route","ag-supply","ag-field"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("running");
+    });
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+(async () => {
+  await checkApi();
+  await renderPage("dashboard");
+})();
+</script>
+</body>
+</html>
